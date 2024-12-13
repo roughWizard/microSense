@@ -1,40 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MicroSense</title>
     <link rel="stylesheet" href="style.css">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <h1>MicroSense</h1>
     <button id="connectButton">Connect to Micro:bit</button>
     <br><br>
 
-    <label for="sensorDropdown">Select Sensor: </label>
-    <select id="sensorDropdown">
-        <option value="photoresistor">Photoresistor</option>
-        <option value="accelX">Accelerometer X</option>
-        <option value="custom">Custom</option>
-    </select>
-    
-    <br><br>
+    <label for="sensorTypeDropdown">Select Sensor: </label>
+    <select id="sensorTypeDropdown"></select>
 
-    <label for="sensorTypeDropdown">Sensor Type: </label>
-    <select id="sensorTypeDropdown">
-        <option value="analog">Analog</option>
-        <option value="digital">Digital</option>
-        <option value="internal">Internal</option>
-    </select>
-
-    <br><br>
-
-    <label for="sensorChannelDropdown">Channel: </label>
-    <select id="sensorChannelDropdown">
-        <option value="0">0</option>
-        <option value="none">None</option>
-    </select>
+    <label for="sensorChannelDropdown">Select channel: </label>
+    <select id="sensorChannelDropdown"></select>
 
     <br><br>
 
@@ -45,5 +27,5 @@
     <div id="chart_div" style="width: 900px; height: 500px;"></div>
 
     <script src="script.js"></script>
-</body>
+  </body>
 </html>
