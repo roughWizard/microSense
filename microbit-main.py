@@ -36,7 +36,7 @@ def process_command(command):
         try:
             sensor_data = eval(command.split(":", 1)[1])  # Safely parse sensor configuration
             sensor_type = sensor_data.get("type")
-            sensor_channel = sensor_data.get("channel")
+            sensor_channel = int(sensor_data.get("channel"))
             uart.write("Sensor set to type:{}, channel:{}\n".format(sensor_type, sensor_channel))
         except Exception:
             uart.write("Invalid sensor configuration\n")
@@ -44,6 +44,10 @@ def process_command(command):
     elif command == "SEND_DATA":
         send_data_flag = True
         uart.write("Send data command received\n")
+
+    elif command == "STOP_DATA":
+        send_data_flag = False
+        uart.write("Stop data command received\n")
 
 # Main loop
 while True:

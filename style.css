@@ -1,28 +1,28 @@
 body {
     font-family: Arial, sans-serif;
-    text-align: center;
     margin: 20px;
 }
 
+h1 {
+    text-align: center;
+}
+
 button {
-    padding: 10px;
-    font-size: 16px;
+    padding: 10px 20px;
     margin: 10px;
-}
-
-#charts {
-    margin-top: 20px;
-}
-
-#sensorConfiguration {
-    margin-top: 20px;
-}
-
-#recordDataSection {
-    margin-top: 20px;
+    font-size: 16px;
 }
 
 select {
     padding: 10px;
+    font-size: 16px;
+}
+
+#chart_div {
+    margin-top: 20px;
+    text-align: center;
+}
+
+label {
     font-size: 16px;
 }

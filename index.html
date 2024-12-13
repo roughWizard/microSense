@@ -3,43 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Micro:bit Sensor Data</title>
+    <title>MicroSense</title>
     <link rel="stylesheet" href="style.css">
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 </head>
 <body>
-    <h1>Micro:bit Sensor Data</h1>
-    <div id="status">
-        <p id="connectionStatus">Not connected</p>
-        <button id="connectButton">Connect Micro:bit</button>
-    </div>
+    <h1>MicroSense</h1>
+    <button id="connectButton">Connect to Micro:bit</button>
+    <br><br>
 
-    <div id="sensorConfiguration" style="display:none;">
-        <h2>Sensor Configuration</h2>
-        <label for="sensorType">Select Sensor Type:</label>
-        <select id="sensorType">
-            <option value="analog">Analog</option>
-            <option value="digital">Digital</option>
-        </select>
+    <label for="sensorDropdown">Select Sensor: </label>
+    <select id="sensorDropdown">
+        <option value="photoresistor">Photoresistor</option>
+        <option value="accelX">Accelerometer X</option>
+        <option value="custom">Custom</option>
+    </select>
+    
+    <br><br>
 
-        <label for="sensorChannel">Select Channel:</label>
-        <select id="sensorChannel">
-            <option value="0">0</option>
-            <option value="1">1</option>
-        </select>
+    <label for="sensorTypeDropdown">Sensor Type: </label>
+    <select id="sensorTypeDropdown">
+        <option value="analog">Analog</option>
+        <option value="digital">Digital</option>
+        <option value="internal">Internal</option>
+    </select>
 
-        <button id="sendSensorConfigButton">Send Sensor Configuration</button>
-    </div>
+    <br><br>
 
-    <div id="recordDataSection" style="display:n one;">
-        <button id="recordDataButton">Record Data</button>
-    </div>
+    <label for="sensorChannelDropdown">Channel: </label>
+    <select id="sensorChannelDropdown">
+        <option value="0">0</option>
+        <option value="none">None</option>
+    </select>
 
-    <div id="charts">
-        <div id="accelChart"></div>
-        <div id="tempChart"></div>
-    </div>
+    <br><br>
 
-    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <button id="recordDataButton" disabled>Start Recording</button>
+    <button id="stopRecordingButton" disabled>Stop Recording</button>
+    <button id="downloadDataButton" disabled>Download Data</button>
+
+    <div id="chart_div" style="width: 900px; height: 500px;"></div>
+
     <script src="script.js"></script>
 </body>
 </html>
