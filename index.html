@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Micro:bit Sensor Data</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Micro:bit Sensor Data</h1>
+    <div id="status">
+        <p id="connectionStatus">Not connected</p>
+        <button id="connectButton">Connect Micro:bit</button>
+    </div>
+
+    <div id="sensorConfiguration" style="display:none;">
+        <h2>Sensor Configuration</h2>
+        <label for="sensorType">Select Sensor Type:</label>
+        <select id="sensorType">
+            <option value="analog">Analog</option>
+            <option value="digital">Digital</option>
+        </select>
+
+        <label for="sensorChannel">Select Channel:</label>
+        <select id="sensorChannel">
+            <option value="0">0</option>
+            <option value="1">1</option>
+        </select>
+
+        <button id="sendSensorConfigButton">Send Sensor Configuration</button>
+    </div>
+
+    <div id="recordDataSection" style="display:n one;">
+        <button id="recordDataButton">Record Data</button>
+    </div>
+
+    <div id="charts">
+        <div id="accelChart"></div>
+        <div id="tempChart"></div>
+    </div>
+
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
