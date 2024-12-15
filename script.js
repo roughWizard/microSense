@@ -10,6 +10,17 @@ let selectedSensor = '';
 let sensorType = 'none';
 let sensorChannel = '0';
 let chart;
+let chartOptions = {
+  curveType: 'none',
+  legend: { position: 'none' },
+  hAxis: {
+    title: "Time (s)" ,
+    viewWindow: {
+      min: 0,
+      max: 60
+    }
+  }
+};
 let dataTable;
 
 
@@ -20,8 +31,8 @@ function populateFields() {
 	let sensors = [
 		["Photoresistor", "photoresistor"],
 		["Variable resistor", "variableResistor"],
-		["Internal accelerometer X", "accelx"],
-		["Internal temperature", "temp"]
+		["Internal accelerometer X", "internalAccelx"],
+		["Internal temperature", "internalTemp"]
 	];
 
 	sensors.forEach(sensor => {
@@ -41,26 +52,32 @@ function populateFields() {
 	}
 }
 
+// Set up event listeners for buttons
 document.getElementById('connectButton').addEventListener('click', connectMicrobit);
-document.getElementById('sensorTypeDropdown').addEventListener('change', resetChart);
 document.getElementById('recordDataButton').addEventListener('click', startRecording);
 document.getElementById('stopRecordingButton').addEventListener('click', stopRecording);
 document.getElementById('downloadDataButton').addEventListener('click', downloadData);
+document.getElementById('sendSamplingRateButton').addEventListener('click', sendSamplingRate);
 
 
 async function connectMicrobit() {
   try {
-	const selectedPort = await navigator.serial.requestPort();
-	port = selectedPort;
-	await port.open({ baudRate: 115200 });
+  	const selectedPort = await navigator.serial.requestPort();
+  	port = selectedPort;
+  	await port.open({ baudRate: 115200 });
 
-	// Create writer for sending data and reader for receiving data
-	writer = port.writable.getWriter();
-	reader = port.readable.getReader();
-	
-	console.log("Micro:bit connected.");
-	document.getElementById('recordDataButton').disabled = false;
-	readData(); // Start reading data from the microbit
+  	// Create writer for sending data and reader for receiving data
+  	writer = port.writable.getWriter();
+  	reader = port.readable.getReader();
+  	
+  	console.log("Micro:bit connected.");
+    document.getElementById('connectButton').disabled = true;
+    document.getElementById('connectButton').textContent = "Connected to Microbit";
+
+  	document.getElementById('recordDataButton').disabled = false;
+    stopRecording(); // Stop any ongoing data collection
+  	readData(); // Start reading data from the microbit
+
   } catch (error) {
 		console.error("Error connecting to Micro:bit:", error);
   }
@@ -80,7 +97,7 @@ async function readData() {
 
 				for (let line of lines) { // Process each command one at a time (if more than one)
 				  // Log incoming data before processing
-				  //console.log("Received data:", line.trim());
+				  console.log(`Received data: "${line.trim()}"`);
 				  handleIncomingData(line.trim());
 				}
 		  }
@@ -93,39 +110,73 @@ async function readData() {
 }
 
 function handleIncomingData(data) {
-  if (data.startsWith('data:')) {
-		const [time, sensorValue] = data.replace("data:","").split(","); // Remove identifier and make into array
-		
+  if (data.startsWith('DATA:')) {
+    let values = data.replace("DATA:","").split(","); // Remove identifier and make into array
+		let [time, sensorValue] = [parseFloat((values[0] / 1000).toFixed(1)), parseFloat(values[1])]; // Convert ms to s
+
 		if (! (isNaN(time) && isNaN(sensorValue)) ) {
-			time = (time / 1000).toFixed(1); // Convert ms to s and round to tenth
 		  sensorData.push([time, sensorValue]);
 
 		  // Update chart data
-		  dataTable.addRow([time, sensorValue]);
-			  chart.draw(dataTable, {
-				title: selectedSensor + ' Data',
-				curveType: 'none',
-				legend: { position: 'none' },
-				vAxis: { title: 'Value' }
-		  });
+      if (dataTable) { // In case Microbit already sending data and data chart is not ready
+  		  dataTable.addRow([time, sensorValue]);
+
+        // Check and limit dataTable to 60 rows
+        if (dataTable.getNumberOfRows() > 60) {
+          dataTable.removeRow(0); // Remove the oldest row
+        }
+        
+        // Calculate x-axis range: first and last time values
+        const maxTime = dataTable.getValue(dataTable.getNumberOfRows() - 1, 0); // Newest time value
+        if (maxTime > chartOptions.hAxis.viewWindow.max) { // Data past end of graph ?
+          Object.assign(chartOptions, {
+            hAxis: { 
+              viewWindow: {
+                max: maxTime // Resize graph to fit data
+              }
+            },
+          });
+        }
+
+        // Redraw chart
+        chart.draw(dataTable, chartOptions);
+      }
 		}
+  } else if (data.startsWith('SENSOR_CONFIG:')) {
+    const dropdown = document.getElementById('sensorTypeDropdown');
+    const selectedText = dropdown.options[dropdown.selectedIndex].text;
+    Object.assign(chartOptions, {
+      title: selectedText + " data",
+      vAxis: { title: data.match(/unit:(.*)(?:,|$)/)[1] }
+    });
+  }
+}
+
+function sendSamplingRate() {
+  const rate = document.getElementById('samplingRateInput').value;
+  
+  if (rate && !isNaN(rate)) {
+    // Send the SET_INTERVAL command with the rate
+    const command = `SET_INTERVAL:${rate}`;
+    writeData(command, "Setting sampling rate");
+  } else {
+    console.error("Invalid sampling rate.");
   }
 }
 
 function startRecording() {
   // Local variables for sensor type and channel
-  let localSensorType = document.getElementById('sensorTypeDropdown').value;
-  let localSensorChannel = document.getElementById('sensorChannelDropdown').value;
+  const sensorType = document.getElementById('sensorTypeDropdown').value;
+  const sensorChannel = document.getElementById('sensorChannelDropdown').value;
 
   sensorData = [];
-  timeIndex = 0;
   resetChart();
 
   // Retrieve current settings for sensor type and channel
-  console.log("Current sensor settings:", localSensorType, localSensorChannel);
+  console.log("Current sensor settings:", sensorType, sensorChannel);
 
   // Create the sensor configuration command
-  let command = `SET_SENSOR:{"type":"${localSensorType}","channel":"${localSensorChannel}"}`;
+  let command = `SET_SENSOR:${sensorType},${sensorChannel}`;
   writeData(command);  // Send sensor configuration command
 
   // Start data recording command
@@ -146,9 +197,9 @@ function stopRecording() {
   // Don't disable the "Download Data" button when stopping the recording
 }
 
-function writeData(command,logging="Sending data:") { // Default value for logging if none given
+function writeData(command,logging="") { // Default value for logging if none given
   // Log and send the data
-  console.log(logging, ":", command);
+  console.log(`Sending data: "${command}" (${logging})`);
   writer.write(new TextEncoder().encode(command + '\n'));  // Send data
 }
 
@@ -160,7 +211,7 @@ function downloadData() {
 
   let csvContent = "Time,Sensor Value\n";
   sensorData.forEach(row => {
-	csvContent += `${row[0]},${row[1]}\n`;
+    csvContent += `${row[0]},${row[1]}\n`;
   });
 
   let blob = new Blob([csvContent], { type: 'text/csv' });
@@ -172,9 +223,9 @@ function downloadData() {
 
 function resetChart() {
   dataTable = new google.visualization.DataTable();
-  dataTable.addColumn('string', 'Time');
+  dataTable.addColumn('number', 'Time');
   dataTable.addColumn('number', 'Sensor Value');
 
   chart = new google.visualization.LineChart(document.getElementById('chart_div'));
-  chart.draw(dataTable, { title: 'Sensor Data', curveType: 'none', legend: { position: 'none' }, vAxis: { title: 'Value' } });
+  chart.draw(dataTable, chartOptions);
 }
