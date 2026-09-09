@@ -163,12 +163,13 @@ function configureWebapgeSensors(data) { // [["photoresistor","analog","0","%"],
       if (sensor.length != 0 ) { // There is data
         const [sensorName,sensorMode,sensorChannel,sensorUnit] = sensor;
         dropdown.value = sensorName; // Auto-select sensor type
+		const dropdownText = dropdown.options[dropdown.selectedIndex].text;
         
         // Change chart options for unit
         chartOptions[sensorChannel] = {
           ...defaultChartOptions,
           ...{
-            title: `Channel ${sensorChannel}`,
+            //title: `Channel ${sensorChannel}: ${dropdownText}, last value: `,
             colors: [chartColors[sensorChannel]],
             vAxis: {
               title: `Sensor value (${sensorUnit})`
@@ -301,6 +302,11 @@ function drawLiveChart(channel) {
     });
   }
 
+  // Dynamically update the chart title with the latest value
+  const dropdown = document.getElementById(`sensorTypeDropdown${channel}`);
+  const dropdownText = dropdown.options[dropdown.selectedIndex].text;
+  chartOptions[channel].title = `Channel ${channel}: ${dropdownText} (Latest: ${latestValue})`;
+	
   chart[channel].draw(data, chartOptions[channel]);
 }
 
