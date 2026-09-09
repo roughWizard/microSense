@@ -1,3 +1,7 @@
+// Firmware version (number I decide based on my updates)
+const version = "1.1"
+document.getElementById("version").innerHTML = version;
+
 google.charts.load('current', { 'packages': ['corechart'] });
 
 let port;
