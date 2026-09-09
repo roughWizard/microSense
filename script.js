@@ -309,6 +309,7 @@ function drawLiveChart(channel) {
   // Dynamically update the chart title with the latest value
   const dropdown = document.getElementById(`sensorTypeDropdown${channel}`);
   const dropdownText = dropdown.options[dropdown.selectedIndex].text;
+  const latestValue = latestData[latestData.length - 1][1]; // Extract latest value
   chartOptions[channel].title = `Channel ${channel}: ${dropdownText} (Latest: ${latestValue})`;
 	
   chart[channel].draw(data, chartOptions[channel]);
